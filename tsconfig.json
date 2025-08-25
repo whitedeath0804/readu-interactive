@@ -1,12 +1,10 @@
+// tsconfig.json
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
+    "types": [],                    // ⬅️ opt-out of implicit type libs (removes jest)
+    "paths": { "@/*": ["./*"] },
   },
   "include": [
     "**/*.ts",
