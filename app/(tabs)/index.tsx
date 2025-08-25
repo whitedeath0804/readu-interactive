@@ -1,34 +1,39 @@
-import { View, Text } from "react-native";
+import React from "react";
+import { View } from "react-native";
+import SecondaryButton, { GoogleLogo24 } from "@/components/ui/SecondaryButton";
 import PrimaryButton from "@/components/ui/PrimaryButton";
-import { Typo } from "@/constants/Typography";
 import { Colors } from "@/constants/Colors";
 
-export default function Demo() {
-  return (
-    <View style={{ gap: 16, padding: 16, backgroundColor: Colors.background }}>
-      {/* default: selection haptic on pressIn */}
-      <PrimaryButton label="Продължи" onPress={() => {}} />
 
-      {/* heavy impact on actual press */}
+
+export default function AuthButtons() {
+  return (
+    <View style={{ gap: 12, padding: 16, backgroundColor: Colors.background }}>
+      {/* One-line; shrinks slightly if needed */}
       <PrimaryButton
-        label="Запази"
-        haptics="heavy"
-        hapticsOn="press"
-        onPress={() => {}}
+        icon={<GoogleLogo24 />}
+        label="продължи"
         fullWidth
       />
 
-      {/* success notification on long press */}
-      <PrimaryButton
-        haptics="success"
-        hapticsOn="longPress"
-        onLongPress={() => {}}
-      >
-        <Text style={[Typo.body2, { color: Colors.text }]}>Двуреден</Text>
-      </PrimaryButton>
+      {/* Guaranteed full visibility via wrap (auto height) */}
+      <SecondaryButton
+        icon={<GoogleLogo24 />}
+        label="продължи с Google"
+        fullWidth
+        multiline
+        onPress={() => {console.log("Pressed")}}
+      />
 
-      {/* disabled — no haptics */}
-      <PrimaryButton label="Изпращане" disabled />
+      <SecondaryButton
+        icon={<GoogleLogo24 />}
+        label="продължи с Google"
+        fullWidth
+        multiline
+        loading
+      />
+
+      <PrimaryButton label="Вход" fullWidth />
     </View>
   );
 }
