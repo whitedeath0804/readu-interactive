@@ -4,7 +4,7 @@ module.exports = function (api) {
     presets: ['babel-preset-expo'],
     plugins: [
       // ["module-resolver", { alias: { "@": "./src", "@assets": "./assets" } }],
-      "react-native-worklets/plugin", // 👈 must be last
+      'react-native-worklets/plugin',
     ],
   };
 };
