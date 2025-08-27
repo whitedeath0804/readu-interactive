@@ -23,8 +23,8 @@ import { Typo } from "@/constants/Typography";
 import CloseButton from "@/components/ui/CloseButton";
 
 type Props = {
-  title?: React.ReactNode | string;         // no defaults
-  subtitle?: React.ReactNode | string;      // no defaults
+  title?: React.ReactNode | string;
+  subtitle?: React.ReactNode | string;
 
   logoSource?: ImageSourcePropType;
   logoComponent?: React.ReactNode;
@@ -67,37 +67,60 @@ export default function UpgradePromoCard({
   const [measuredH, setMeasuredH] = useState(0);
   const isClosingRef = useRef(false);
 
-  // Animations
-  const progress = useSharedValue(animateIn ? 0 : 1); // 0→1 shown; 0 means collapsed (height/opac/scale)
-  const tx = useSharedValue(0);                       // slide left for swipe/close
-  const cardW = useSharedValue(0);                    // width for swipe threshold
+  // Жива височина според съдържанието
+  const contentH = useSharedValue(0);
+  const firstLayoutDone = useRef(false);
+
+  // За dismiss: "замразена" височина + флаг
+  const staticH = useSharedValue(0);
+  const isClosingSV = useSharedValue(0); // 0=open, 1=closing
+
+  // Анимации
+  const progress = useSharedValue(animateIn ? 0 : 1); // 1=open, 0=collapsed
+  const tx = useSharedValue(0);                       // хор. плъзгане
+  const cardW = useSharedValue(0);                    // ширина за праг
 
   React.useEffect(() => {
     progress.value = animateIn ? withTiming(1, { duration: durationIn }) : 1;
   }, [animateIn, durationIn, progress]);
 
   const onLayout = (e: LayoutChangeEvent) => {
-    if (isClosingRef.current) return;
+    if (isClosingRef.current) return; // не пречим на dismiss
     const { height, width } = e.nativeEvent.layout;
-    if (height !== measuredH) setMeasuredH(height);
+
+    if (!firstLayoutDone.current) {
+      firstLayoutDone.current = true;
+      setMeasuredH(height);
+      contentH.value = height; // първоначално без tween
+    } else if (height !== measuredH) {
+      setMeasuredH(height);
+      contentH.value = withTiming(height, { duration: 180 }); // плавна промяна при текст
+    }
+
     cardW.value = width;
   };
 
   const finishDismiss = useCallback(() => {
-    if (onDismiss) onDismiss();
+    onDismiss?.();
   }, [onDismiss]);
 
   const closeCard = useCallback(() => {
     if (isClosingRef.current) return;
     isClosingRef.current = true;
-    // slide left + collapse
+
+    // замразяваме височината за устойчив dismiss
+    const freeze = contentH.value || measuredH || 0;
+    staticH.value = freeze;
+    isClosingSV.value = 1;
+
+    // плъзгане вляво + колапс
     tx.value = withTiming(-(cardW.value || 300), { duration: Math.min(durationOut, 220) });
     progress.value = withTiming(0, { duration: durationOut }, (fin) => {
       if (fin) runOnJS(finishDismiss)();
     });
-  }, [durationOut, finishDismiss, progress, tx, cardW]);
+  }, [durationOut, finishDismiss, measuredH, contentH, staticH, isClosingSV, tx, cardW, progress]);
 
-  // --- Gestures ---
+  // --- Жестове ---
   const closeTap = Gesture.Tap()
     .maxDuration(250)
     .onEnd((_e, success) => {
@@ -105,9 +128,9 @@ export default function UpgradePromoCard({
     });
 
   const pan = Gesture.Pan()
-    .activeOffsetX([-10, 10]) // require some horizontal intent
+    .activeOffsetX([-10, 10])
     .onUpdate((e) => {
-      // only allow left drag
+      // само наляво
       const next = Math.min(0, e.translationX);
       tx.value = next;
     })
@@ -117,33 +140,41 @@ export default function UpgradePromoCard({
       const distanceDismiss = tx.value < -threshold;
 
       if (velocityDismiss || distanceDismiss) {
-        // complete dismiss via slide then collapse
         tx.value = withTiming(-(cardW.value || 300), { duration: 160 });
         runOnJS(closeCard)();
       } else {
-        // snap back
         tx.value = withTiming(0, { duration: 160 });
       }
     });
 
-  // --- Animated styles ---
+  // --- СТИЛОВЕ (единствената промяна е тук) ---
   const containerA = useAnimatedStyle(() => {
-    const scale = 0.98 + 0.02 * progress.value;
-    const opacity = progress.value;
-    const height = measuredH * progress.value;
-    const marginV = 12 * progress.value;
+    // базова височина: замразена при dismiss, жива при отворено
+    const baseH = isClosingSV.value ? staticH.value : contentH.value;
+
+    // фактор от плъзгането: 1 → 0 когато tx от 0 → -cardW
+    const w = cardW.value || 1;
+    const dragRatioRaw = 1 + tx.value / w; // tx е отрицателен
+    const dragRatio = Math.max(0, Math.min(1, dragRatioRaw));
+
+    // комбиниран фактор: едновременно уважаваме progress (dismiss) и dragRatio (приплъзване)
+    const heightFactor = progress.value * dragRatio;
+
+    const height = baseH * heightFactor;
+    const opacity = heightFactor;
+    const scale = 0.98 + 0.02 * heightFactor;
+    const marginV = 12 * heightFactor;
+
     return {
       opacity,
       height,
       marginVertical: marginV,
       transform: [{ scale }],
     };
-  }, [measuredH]);
+  }, []);
 
   const slideA = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: tx.value }],
-    };
+    return { transform: [{ translateX: tx.value }] };
   });
 
   // --- Nodes ---
@@ -181,7 +212,7 @@ export default function UpgradePromoCard({
 
   return (
     <Animated.View style={[styles.animatedWrap, containerA, style]}>
-      {/* Swipe-to-dismiss on the whole card */}
+      {/* Swipe-to-dismiss на цялата карта */}
       <GestureDetector gesture={pan}>
         <Animated.View style={[slideA]}>
           <LinearGradient
@@ -191,7 +222,7 @@ export default function UpgradePromoCard({
             style={styles.card}
             onLayout={onLayout}
           >
-            {/* Content press (independent from close) */}
+            {/* Съдържание (отделно от close) */}
             <Pressable
               disabled={!onPress}
               onPress={onPress}
@@ -220,7 +251,7 @@ export default function UpgradePromoCard({
               </View>
             </Pressable>
 
-            {/* Close button — highest priority tap + above everything */}
+            {/* Close — най-отгоре и със собствен Tap */}
             <View style={styles.closePos} pointerEvents="box-none">
               <GestureDetector gesture={closeTap}>
                 <Pressable
@@ -258,14 +289,8 @@ const styles = StyleSheet.create({
   logoImg: { width: 40, height: 40 },
   textCol: { flex: 1 },
 
-  // Close button overlay — force top priority for touch on Android+iOS
   closePos: { position: "absolute", top: 8, right: 8, zIndex: 10, elevation: 10 },
-  closeTouch: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  closeTouch: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
 
   title: { color: Colors.text },
   subtitle: { color: Colors.text, opacity: 0.9, marginTop: 4 },
