@@ -4,27 +4,25 @@ import Input from '../../components/ui/Input';
 import PasswordInput from '../../components/ui/PasswordInput';
 import Checkbox from '../../components/ui/Checkbox';
 import PrimaryButton from '../../components/ui/PrimaryButton';
+import SecondaryButton from '../../components/ui/SecondaryButton';
 import { useAuth } from '../../providers/AuthProvider';
 import { useToast } from '../../providers/ToastProvider';
 import useAuthStore from '../../store/useAuthStore';
-import { useRouter } from 'expo-router';
 
 type Step = 'details' | 'plan';
 
-export default function SignIN() {
+export default function Signup() {
   const [step, setStep] = useState<Step>('details');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [agree, setAgree] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<'free' | 'premium'>('free');
 
   const { signUpEmail } = useAuth();
   const toast = useToast();
-  const router = useRouter();
 
   const canNext = useMemo(() => !!name && !!email && !!password && agree, [name, email, password, agree]);
 
@@ -33,16 +31,11 @@ export default function SignIN() {
     setStep('plan');
   }
 
-  async function onContinue() {
+  async function onCreate() {
     try {
       setLoading(true);
       await signUpEmail(name, email.trim(), password);
       toast.success('Акаунтът е създаден');
-      if (plan === 'premium') {
-        router.push('/(auth)/payment');
-      } else {
-        router.replace('/(tabs)');
-      }
     } catch (e: any) {
       toast.error('Неуспешна регистрация', e?.message);
     } finally {
@@ -78,10 +71,6 @@ export default function SignIN() {
             <View style={{ height: 12 }} />
             <PasswordInput value={password} onChangeText={setPassword} placeholder="Парола" />
             <View style={{ height: 12 }} />
-            <Pressable onPress={() => setRemember(!remember)} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <Checkbox checked={remember} onChange={setRemember} />
-              <Text style={{ color: '#fff', marginLeft: 8 }}>Запомни ме</Text>
-            </Pressable>
             <Pressable onPress={() => setAgree(!agree)} style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Checkbox checked={agree} onChange={setAgree} />
               <Text style={{ color: '#fff', marginLeft: 8 }}>Съгласен съм с <Text style={{ color: '#FF7A1A' }}>Правила и условия</Text></Text>
@@ -108,7 +97,7 @@ export default function SignIN() {
               <Text style={{ color: 'rgba(255,255,255,0.8)' }}>• Повече AI инструменти</Text>
             </Pressable>
             <View style={{ height: 16 }} />
-            <PrimaryButton disabled={loading} onPress={onContinue}>Продължи</PrimaryButton>
+            <PrimaryButton disabled={loading} onPress={onCreate}>Продължи</PrimaryButton>
           </View>
         )}
       </ScrollView>
