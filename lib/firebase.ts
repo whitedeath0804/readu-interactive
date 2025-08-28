@@ -1,35 +1,48 @@
-import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { initializeAuth, setPersistence, getAuth, Auth, inMemoryPersistence } from 'firebase/auth';
-import { getReactNativePersistence } from 'firebase/auth';
-import * as SecureStore from 'expo-secure-store';
-import { USE_RNFIREBASE } from '../constants/firebaseProvider';
+// src/lib/firebaseHybrid.ts
+import { FirebaseApp, initializeApp, getApps } from "firebase/app";
+import {
+  Auth,
+  getAuth,
+  initializeAuth,
+  getReactNativePersistence,
+  inMemoryPersistence,
+  setPersistence,
+} from "firebase/auth";
+import * as SecureStore from "expo-secure-store";
+import { USE_RNFIREBASE } from "../constants/firebaseProvider";
 
-// Web SDK config (used if RNFirebase is not active)
+// Web SDK config (used when RNFirebase isn't active)
 export const firebaseConfig = {
-  apiKey: 'AIzaSyCu5NlhI9X5TyXMmDB4aHYD4ENDWlMRW3g',
-  authDomain: 'readu-interactive.firebaseapp.com',
-  projectId: 'readu-interactive',
-  storageBucket: 'readu-interactive.firebasestorage.app',
-  messagingSenderId: '819352885553',
-  appId: '1:819352885553:web:6d7d9c49ba6e7963593810',
-  measurementId: 'G-T4Z4L7QRTP',
+  apiKey: "AIzaSyCu5NlhI9X5TyXMmDB4aHYD4ENDWlMRW3g",
+  authDomain: "readu-interactive.firebaseapp.com",
+  projectId: "readu-interactive",
+  storageBucket: "readu-interactive.appspot.com", // ✅ fix
+  messagingSenderId: "819352885553",
+  appId: "1:819352885553:web:6d7d9c49ba6e7963593810",
+  measurementId: "G-T4Z4L7QRTP",
 };
 
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
+
+// RNFirebase (native) singletons
 let nativeApp: any;
 let nativeAuth: any;
 let usingRNFirebase = false;
 
-// Attempt to initialize React Native Firebase if flag is on and modules exist
+// Try React Native Firebase first
 if (USE_RNFIREBASE) {
   try {
-    // Lazy require to avoid bundling errors when not installed
-    const rnfbApp = require('@react-native-firebase/app');
-    const rnfbAuth = require('@react-native-firebase/auth');
-    nativeApp = rnfbApp.default?.() || rnfbApp();
-    nativeAuth = rnfbAuth.default?.() || rnfbAuth();
-    usingRNFirebase = Boolean(nativeApp && nativeAuth);
+    const appMod = require("@react-native-firebase/app");
+    const authMod = require("@react-native-firebase/auth");
+
+    const appModule = appMod.default ?? appMod;
+    nativeApp = appModule.app ? appModule.app() : appModule();
+
+    const authModule = authMod.default ?? authMod;
+    nativeAuth = authModule();
+
+    usingRNFirebase = !!nativeAuth;
   } catch {
     usingRNFirebase = false;
   }
@@ -38,64 +51,45 @@ if (USE_RNFIREBASE) {
 export function getFirebaseApp() {
   if (usingRNFirebase) return nativeApp;
   if (!app) {
-    if (!getApps().length) {
-      app = initializeApp(firebaseConfig);
-    } else {
-      app = getApps()[0]!;
-    }
+    app = getApps()[0] ?? initializeApp(firebaseConfig);
   }
   return app!;
 }
 
 export function getFirebaseAuth(persist: boolean = true) {
   if (usingRNFirebase) return nativeAuth;
+
   const appInstance = getFirebaseApp();
-
   if (!auth) {
-    try {
-      const secureStorageLike = {
-        getItem: (key: string) => SecureStore.getItemAsync(key),
-        setItem: (key: string, value: string) => SecureStore.setItemAsync(key, value),
-        removeItem: (key: string) => SecureStore.deleteItemAsync(key),
-      } as any;
+    // SecureStore-backed persistence for RN Web SDK path
+    const secureStorage = {
+      getItem: (k: string) => SecureStore.getItemAsync(k),
+      setItem: (k: string, v: string) => SecureStore.setItemAsync(k, v),
+      removeItem: (k: string) => SecureStore.deleteItemAsync(k),
+    } as any;
 
+    try {
       auth = initializeAuth(appInstance, {
-        persistence: getReactNativePersistence(secureStorageLike),
+        persistence: getReactNativePersistence(secureStorage),
       });
-    } catch (e) {
+    } catch {
+      // Fallback if initializeAuth throws (e.g., on web)
       auth = getAuth(appInstance);
     }
   }
 
   if (!persist) {
-    try {
-      setPersistence(auth, inMemoryPersistence);
-    } catch {}
+    // don't await; keep API sync and ignore errors
+    void setPersistence(auth, inMemoryPersistence).catch(() => {});
   }
 
-  return auth;
+  return auth!;
 }
 
-// Helper accessors/flags
-export function isRNFirebase() {
-  return usingRNFirebase;
-}
-
-export function getRNFirebaseAuth() {
-  return nativeAuth;
-}
-
-export function getRNFirebaseApp() {
-  return nativeApp;
-}
-
-export function getWebFirebaseAuth() {
-  return auth;
-}
-
-export function getWebFirebaseApp() {
-  return app;
-}
-
+// Helpers
+export const isRNFirebase = () => usingRNFirebase;
+export const getRNFirebaseAuth = () => nativeAuth;
+export const getRNFirebaseApp = () => nativeApp;
+export const getWebFirebaseAuth = () => auth;
+export const getWebFirebaseApp = () => app;
 export default getFirebaseAuth;
-
