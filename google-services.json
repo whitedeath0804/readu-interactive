@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "819352885553",
+    "project_id": "readu-interactive",
+    "storage_bucket": "readu-interactive.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:819352885553:android:6288692241394f99593810",
+        "android_client_info": {
+          "package_name": "com.readu.interactive"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "819352885553-5vhk3kmpgh9qa2t2ohb1hr82dfbddslb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAS8en7_eDNyb1zmyy8BqmlgglraziBQIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "819352885553-5vhk3kmpgh9qa2t2ohb1hr82dfbddslb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "819352885553-734i2rdptl85l2lkgmk6u6loo7orin0g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.readu.readu-interactive"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

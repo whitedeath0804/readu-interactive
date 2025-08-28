@@ -4,7 +4,7 @@
   "compilerOptions": {
     "strict": true,
     "types": [],                    // ⬅️ opt-out of implicit type libs (removes jest)
-    "paths": { "@/*": ["./*"], "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"] },
+    "paths": { "@/*": ["./*"] },
   },
   "include": [
     "**/*.ts",
