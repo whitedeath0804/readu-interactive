@@ -17,6 +17,7 @@ import CodeInput from "@/components/ui/CodeInput";
 import PasswordInput from "@/components/ui/PasswordInput";
 import Input from "@/components/ui/Input";
 import SegmentedPicker from "@/components/ui/SegmentedPicker";
+import CourseCard from "@/components/ui/CourseCard";
 
 const countries: SelectOption[] = [
   { key: "ro", label: "Romania" },
@@ -34,6 +35,7 @@ export default function AuthButtons() {
   const invalid = pwd.length > 0 && pwd.length < 8;
   const [country, setCountry] = useState<string | undefined>();
   const [tab, setTab] = useState(0);
+  const [progress, setProgress] = useState(0.45);
 
   const handleCardPress = () => console.log("Card pressed");
 
@@ -109,6 +111,14 @@ export default function AuthButtons() {
           }}
           size="md"
         />
+        <CourseCard
+        image={require("../../assets/images/readu-test-card.jpg")}
+        title="научи английски"
+        lessonsLabel="16 урока"
+        progress={progress}          // <-- fully programmable
+        // progressLabel="45%"       // custom label (optional)
+        onPress={() => console.log("open course")}
+      />
       </ScrollView>
     </KeyboardAvoidingView>
   );
