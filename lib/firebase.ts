@@ -9,9 +9,7 @@ import {
   setPersistence,
 } from "firebase/auth";
 import * as SecureStore from "expo-secure-store";
-import { USE_RNFIREBASE } from "../constants/firebaseProvider";
-
-// Web SDK config (used when RNFirebase isn't active)
+// Web SDK config
 export const firebaseConfig = {
   apiKey: "AIzaSyCu5NlhI9X5TyXMmDB4aHYD4ENDWlMRW3g",
   authDomain: "readu-interactive.firebaseapp.com",
@@ -25,31 +23,7 @@ export const firebaseConfig = {
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 
-// RNFirebase (native) singletons
-let nativeApp: any;
-let nativeAuth: any;
-let usingRNFirebase = false;
-
-// Try React Native Firebase first
-if (USE_RNFIREBASE) {
-  try {
-    const appMod = require("@react-native-firebase/app");
-    const authMod = require("@react-native-firebase/auth");
-
-    const appModule = appMod.default ?? appMod;
-    nativeApp = appModule.app ? appModule.app() : appModule();
-
-    const authModule = authMod.default ?? authMod;
-    nativeAuth = authModule();
-
-    usingRNFirebase = !!nativeAuth;
-  } catch {
-    usingRNFirebase = false;
-  }
-}
-
 export function getFirebaseApp() {
-  if (usingRNFirebase) return nativeApp;
   if (!app) {
     app = getApps()[0] ?? initializeApp(firebaseConfig);
   }
@@ -57,8 +31,6 @@ export function getFirebaseApp() {
 }
 
 export function getFirebaseAuth(persist: boolean = true) {
-  if (usingRNFirebase) return nativeAuth;
-
   const appInstance = getFirebaseApp();
   if (!auth) {
     // SecureStore-backed persistence for RN Web SDK path
@@ -86,10 +58,4 @@ export function getFirebaseAuth(persist: boolean = true) {
   return auth!;
 }
 
-// Helpers
-export const isRNFirebase = () => usingRNFirebase;
-export const getRNFirebaseAuth = () => nativeAuth;
-export const getRNFirebaseApp = () => nativeApp;
-export const getWebFirebaseAuth = () => auth;
-export const getWebFirebaseApp = () => app;
 export default getFirebaseAuth;

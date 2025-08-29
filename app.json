@@ -1,78 +1,15 @@
 {
   "expo": {
-    "name": "readu-interactive",
-    "slug": "readu-interactive",
-    "version": "1.0.0",
-    "scheme": "readuinteractive",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-
+    "extra": {
+      "eas": {
+        "projectId": "6c037d78-8704-46a7-950c-694c4330fe5c"
+      }
+    },
     "ios": {
-      "supportsTablet": true,
       "bundleIdentifier": "com.whitedeathneo.readuinteractive",
-      "googleServicesFile": "./GoogleService-Info.plist",
-      "deploymentTarget": "15.1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
-    },
-
-    "android": {
-      "package": "com.whitedeathneo.readuinteractive",
-      "googleServicesFile": "./google-services.json",
-      "edgeToEdgeEnabled": true,
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-
-    "plugins": [
-      "expo-router",
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "dynamic",
-            "deploymentTarget": "15.1",
-            "otherLdFlags": ["-ObjC"]
-          }
-        }
-      ],
-      [
-        "@react-native-firebase/app",
-        {
-          "ios": { "googleServicesFile": "./GoogleService-Info.plist" },
-          "android": { "googleServicesFile": "./google-services.json" }
-        }
-      ],
-      "@react-native-firebase/auth",
-      ["@stripe/stripe-react-native", {}],
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      "expo-secure-store"
-    ],
-
-    "experiments": { "typedRoutes": true },
-
-    "extra": {
-      "router": {},
-      "eas": { "projectId": "2d559365-7f45-4c42-8986-58aca159d99c" }
     }
   }
 }
