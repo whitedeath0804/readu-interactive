@@ -1,15 +1,70 @@
 {
   "expo": {
-    "extra": {
-      "eas": {
-        "projectId": "6c037d78-8704-46a7-950c-694c4330fe5c"
-      }
-    },
+    "name": "readu-interactive",
+    "slug": "readu-interactive",
+    "version": "1.0.0",
+    "scheme": "readuinteractive",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": false,
+
     "ios": {
+      "supportsTablet": true,
       "bundleIdentifier": "com.whitedeathneo.readuinteractive",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
-    }
+    },
+
+    "android": {
+      "package": "com.whitedeathneo.readuinteractive",
+      "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "dynamic",
+            "deploymentTarget": "15.1",
+            "otherLdFlags": ["-ObjC"],
+            "swiftVersion": "5.10"
+          }
+        }
+      ],
+      ["@stripe/stripe-react-native", {}],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-secure-store"
+    ],
+
+    "experiments": { "typedRoutes": true },
+
+    "extra": {
+      "router": {},
+      "eas": { "projectId": "6c037d78-8704-46a7-950c-694c4330fe5c" }
+    },
+
+    "owner": "whitedeathneo"
   }
 }
