@@ -2,13 +2,13 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { useEffect } from 'react';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import getFirebaseAuth from '../lib/firebase';
+import auth from '../lib/firebase';
 import { GOOGLE_ANDROID_CLIENT_ID, GOOGLE_EXPO_CLIENT_ID, GOOGLE_IOS_CLIENT_ID } from '../constants/authConfig';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function useGoogleSignIn() {
-  const auth = getFirebaseAuth();
+  // Use singleton auth instance
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: GOOGLE_EXPO_CLIENT_ID || undefined,
     androidClientId: GOOGLE_ANDROID_CLIENT_ID || undefined,
@@ -29,4 +29,3 @@ export default function useGoogleSignIn() {
 
   return { request, promptAsync };
 }
-

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import getFirebaseAuth from '../lib/firebase';
+import auth from '../lib/firebase';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -32,7 +32,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const auth = getFirebaseAuth();
+  // Use singleton auth instance
   const { setUser: setUserStore, clearUser } = useAuthStore();
 
   useEffect(() => {

@@ -1,61 +1,44 @@
-// src/lib/firebaseHybrid.ts
-import { FirebaseApp, initializeApp, getApps } from "firebase/app";
+// lib/firebase.ts
+import { Platform } from 'react-native';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
-  Auth,
   getAuth,
   initializeAuth,
   getReactNativePersistence,
-  inMemoryPersistence,
-  setPersistence,
-} from "firebase/auth";
-import * as SecureStore from "expo-secure-store";
-// Web SDK config
+  type Auth,
+} from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Firebase config
 export const firebaseConfig = {
-  apiKey: "AIzaSyCu5NlhI9X5TyXMmDB4aHYD4ENDWlMRW3g",
-  authDomain: "readu-interactive.firebaseapp.com",
-  projectId: "readu-interactive",
-  storageBucket: "readu-interactive.appspot.com", // ✅ fix
-  messagingSenderId: "819352885553",
-  appId: "1:819352885553:web:6d7d9c49ba6e7963593810",
-  measurementId: "G-T4Z4L7QRTP",
+  apiKey: 'AIzaSyCu5NlhI9X5TyXMmDB4aHYD4ENDWlMRW3g',
+  authDomain: 'readu-interactive.firebaseapp.com',
+  projectId: 'readu-interactive',
+  storageBucket: 'readu-interactive.appspot.com',
+  messagingSenderId: '819352885553',
+  appId: '1:819352885553:web:6d7d9c49ba6e7963593810',
+  measurementId: 'G-T4Z4L7QRTP',
 };
 
-let app: FirebaseApp | undefined;
-let auth: Auth | undefined;
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export function getFirebaseApp() {
-  if (!app) {
-    app = getApps()[0] ?? initializeApp(firebaseConfig);
+let _auth: Auth;
+
+if (Platform.OS === 'web') {
+  // On web, use the default Auth instance
+  _auth = getAuth(app);
+} else {
+  // On React Native, initializeAuth must be called exactly once before getAuth
+  try {
+    _auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage as any),
+    });
+  } catch (e) {
+    // During Fast Refresh, initializeAuth may have already been called
+    _auth = getAuth(app);
   }
-  return app!;
 }
 
-export function getFirebaseAuth(persist: boolean = true) {
-  const appInstance = getFirebaseApp();
-  if (!auth) {
-    // SecureStore-backed persistence for RN Web SDK path
-    const secureStorage = {
-      getItem: (k: string) => SecureStore.getItemAsync(k),
-      setItem: (k: string, v: string) => SecureStore.setItemAsync(k, v),
-      removeItem: (k: string) => SecureStore.deleteItemAsync(k),
-    } as any;
+export const auth = _auth;
+export default auth;
 
-    try {
-      auth = initializeAuth(appInstance, {
-        persistence: getReactNativePersistence(secureStorage),
-      });
-    } catch {
-      // Fallback if initializeAuth throws (e.g., on web)
-      auth = getAuth(appInstance);
-    }
-  }
-
-  if (!persist) {
-    // don't await; keep API sync and ignore errors
-    void setPersistence(auth, inMemoryPersistence).catch(() => {});
-  }
-
-  return auth!;
-}
-
-export default getFirebaseAuth;
