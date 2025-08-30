@@ -26,7 +26,7 @@ export default function LogIn() {
       setLoading(true);
       await signInEmail(email.trim(), password);
       toast.success('Успешен вход');
-      router.replace('/(tabs)');
+      router.replace('/');
     } catch (e: any) {
       toast.error('Неуспешен вход', e?.message);
     } finally {
@@ -50,7 +50,7 @@ export default function LogIn() {
             <Checkbox checked={rememberMe} onChange={setRememberMe} />
             <Text style={{ color: '#fff', marginLeft: 8 }}>Запомни ме</Text>
           </Pressable>
-          <Pressable onPress={() => router.push('/(auth)/forgot')}>
+          <Pressable onPress={() => router.push('/forgot')}>
             <Text style={{ color: '#FF7A1A', fontWeight: '600' }}>Забравена парола?</Text>
           </Pressable>
         </View>
@@ -76,7 +76,7 @@ export default function LogIn() {
         {ENABLE_PHONE && (
           <>
             <View style={{ height: 12 }} />
-            <SecondaryButton onPress={() => router.push('/(auth)/phone-start')}>
+            <SecondaryButton onPress={() => router.push('/phone-start')}>
               Вход с телефон
             </SecondaryButton>
           </>
@@ -85,7 +85,7 @@ export default function LogIn() {
         <View style={{ alignItems: 'center', marginTop: 16 }}>
           <Text style={{ color: 'rgba(255,255,255,0.85)' }}>
             Нямаш акаунт?{' '}
-            <Text style={{ color: '#FF7A1A' }} onPress={() => router.push('/(auth)/signIN')}>Регистрирай се</Text>
+            <Text style={{ color: '#FF7A1A' }} onPress={() => router.push('/signIN')}>Регистрирай се</Text>
           </Text>
         </View>
       </View>

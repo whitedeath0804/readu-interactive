@@ -1,29 +1,44 @@
-import { useEffect } from 'react';
-import { useRouter, useSegments } from 'expo-router';
-import useAuthStore from '../store/useAuthStore';
+import { useEffect } from "react";
+import { useRouter, useSegments, useRootNavigationState } from "expo-router";
+import useAuthStore from "../store/useAuthStore";
 
-// Call from app/_layout.tsx to gate routes.
 export default function useAuthGate() {
   const router = useRouter();
   const segments = useSegments();
+  const navState = useRootNavigationState();
   const { isAuthenticated, isSubscribed } = useAuthStore();
 
   useEffect(() => {
-    const inAuthGroup = segments[0] === '(auth)';
-    if (!isAuthenticated) {
-      if (!inAuthGroup) router.replace('/welcome');
-      return;
-    }
-    // Authenticated but not subscribed: allow auth flow and payment
-    if (isAuthenticated && !isSubscribed) {
-      // If trying to access tabs, push to payment
-      if (!inAuthGroup) router.replace('/(auth)/payment');
-      return;
-    }
-    // Authenticated and subscribed
-    if (isAuthenticated && isSubscribed && inAuthGroup) {
-      router.replace('/(tabs)');
-    }
-  }, [segments, isAuthenticated, isSubscribed]);
-}
+    // Wait until the root navigator is mounted
+    if (!navState?.key) return;
 
+    const group = segments?.[0];
+    const firstScreen = group === '(auth)' ? segments?.[1] : segments?.[0];
+    const authSet = new Set([
+      'welcome',
+      'logIn',
+      'forgot',
+      'signIN',
+      'phone-start',
+      'phone',
+      'payment',
+      'onboarding',
+    ]);
+    const inAuthArea = group === '(auth)' || authSet.has(String(firstScreen ?? ''));
+
+    if (!isAuthenticated) {
+      if (!inAuthArea || firstScreen !== 'welcome') router.replace('/welcome');
+      return;
+    }
+
+    if (isAuthenticated && !isSubscribed) {
+      if (firstScreen !== 'payment') router.replace('/payment');
+      return;
+    }
+
+    // Authenticated + subscribed: ensure we leave auth flow
+    if (inAuthArea) {
+      router.replace('/');
+    }
+  }, [navState?.key, segments, isAuthenticated, isSubscribed, router]);
+}

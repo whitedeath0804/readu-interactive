@@ -16,11 +16,13 @@ export default function Onboarding() {
         <Text style={{ color: 'rgba(255,255,255,0.85)', textAlign: 'center', fontSize: 14, marginBottom: 28 }}>
           Вземи бързи съвети, печели точки и получавай помощ.
         </Text>
-        <PrimaryButton onPress={() => router.push('/(auth)/logIn')}>Вход</PrimaryButton>
+        <PrimaryButton onPress={() => router.push('/logIn')}>Вход</PrimaryButton>
         <View style={{ height: 12 }} />
-        <SecondaryButton onPress={() => router.push('/(tabs)')}>Продължи като гост</SecondaryButton>
+        <SecondaryButton onPress={() => router.push('/')}>Продължи като гост</SecondaryButton>
       </View>
     </ImageBackground>
   );
 }
+
+
 

@@ -18,7 +18,7 @@ export default function Forgot() {
       setLoading(true);
       await sendReset(email.trim());
       toast.success('Кодът е изпратен');
-      router.push('/(auth)/logIn');
+      router.push('/logIn');
     } catch (e: any) {
       toast.error('Грешка при изпращане', e?.message);
     } finally {

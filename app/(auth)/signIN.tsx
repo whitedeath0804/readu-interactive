@@ -39,9 +39,9 @@ export default function SignIN() {
       await signUpEmail(name, email.trim(), password);
       toast.success('Акаунтът е създаден');
       if (plan === 'premium') {
-        router.push('/(auth)/payment');
+        router.push('/payment');
       } else {
-        router.replace('/(tabs)');
+        router.replace('/');
       }
     } catch (e: any) {
       toast.error('Неуспешна регистрация', e?.message);

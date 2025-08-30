@@ -38,10 +38,7 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "dynamic",
-            "deploymentTarget": "15.1",
-            "otherLdFlags": ["-ObjC"],
-            "swiftVersion": "5.10"
+            "useFrameworks": "static"
           }
         }
       ],
