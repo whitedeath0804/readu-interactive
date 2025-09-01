@@ -24,11 +24,11 @@ import Checkbox from '@/components/ui/Checkbox';
 import Select, { SelectOption } from '@/components/ui/Select';
 
 const COUNTRIES: SelectOption[] = [
-  { key: 'bg', label: 'Bulgaria' },
-  { key: 'ro', label: 'Romania' },
-  { key: 'gr', label: 'Greece' },
-  { key: 'de', label: 'Germany' },
-  { key: 'fr', label: 'France' },
+  { key: 'bg', label: 'България' },
+  { key: 'ro', label: 'Румъния' },
+  { key: 'gr', label: 'Гърция' },
+  { key: 'de', label: 'Германия' },
+  { key: 'fr', label: 'Франция' },
 ];
 
 export default function Payment() {
@@ -36,7 +36,7 @@ export default function Payment() {
   const router = useRouter();
   const { plan } = useLocalSearchParams<{ plan?: string }>();
   const isPremium = plan === 'premium';
-  const planLabel = isPremium ? 'Premium' : plan === 'free' ? 'Free' : '—';
+  const planLabel = isPremium ? 'Премиум' : plan === 'free' ? 'Безплатен' : '—';
   const price = isPremium ? 22.89 : 0;
 
   // fields
@@ -47,7 +47,7 @@ export default function Payment() {
   const [zip, setZip] = useState('');
   const [saveInfo, setSaveInfo] = useState(false);
 
-  // keyboard-safe padding (works iOS & Android without KAV jank)
+  // keyboard-safe padding
   const [kb, setKb] = useState(0);
   useEffect(() => {
     const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -55,7 +55,7 @@ export default function Payment() {
 
     const onShow = (e: any) => {
       const h = e?.endCoordinates?.height ?? 0;
-      setKb(Math.max(0, h - insets.bottom)); // avoid double padding with home indicator
+      setKb(Math.max(0, h - insets.bottom));
     };
     const onHide = () => setKb(0);
 
@@ -67,17 +67,30 @@ export default function Payment() {
     };
   }, [insets.bottom]);
 
+  const onlyDigits = (s: string) => s.replace(/\D/g, '');
+
   const valid = useMemo(() => {
-    const onlyDigits = (s: string) => s.replace(/\D/g, '');
     const cardOk = onlyDigits(card).length >= 12;
     const expOk = /^\d{2}\/\d{2}$/.test(exp);
     const cvcOk = /^\d{3,4}$/.test(cvc);
-    const zipOk = zip.trim().length >= 3;
+    const zipOk = onlyDigits(zip).length >= 3;
     return cardOk && expOk && cvcOk && zipOk;
   }, [card, exp, cvc, zip]);
 
+  // formatters / sanitizers
+  const onChangeCard = (t: string) => {
+    setCard(onlyDigits(t).slice(0, 19));
+  };
+  const onChangeExp = (t: string) => {
+    const d = onlyDigits(t).slice(0, 4);
+    const mm = d.slice(0, 2);
+    const yy = d.slice(2, 4);
+    setExp(yy ? `${mm}/${yy}` : mm);
+  };
+  const onChangeCvc = (t: string) => setCvc(onlyDigits(t).slice(0, 4));
+  const onChangeZip = (t: string) => setZip(onlyDigits(t).slice(0, 10));
+
   const handlePay = () => {
-    // integrate payment SDK here
     router.replace('/(tabs)');
   };
 
@@ -96,7 +109,6 @@ export default function Payment() {
       />
 
       <SafeAreaView style={[styles.safe, { paddingHorizontal: 20 }]}>
-        {/* tap outside to dismiss keyboard */}
         <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
           <ScrollView
             style={{ flex: 1 }}
@@ -113,74 +125,83 @@ export default function Payment() {
             <View style={styles.headerRow}>
               <CloseButton variant="back" size="sm" onPress={() => router.back()} />
               <Text style={[Typo.h2, styles.headerTitle, { color: Colors.text }]}>
-                Payment method
+                Начин на плащане
               </Text>
             </View>
 
             {/* Selected plan */}
             <Text style={[Typo.body2, { color: Colors.textSecondary, marginTop: 12 }]}>
-              Selected Plan:
+              Избран план:
             </Text>
             <PlanBadge label={planLabel} style={{ marginTop: 6 }} />
 
             {/* Fields */}
             <View style={{ marginTop: 16, gap: 14 }}>
               <Input
-                placeholder="Card number"
+                placeholder="Номер на карта"
                 value={card}
-                onChangeText={setCard}
+                onChangeText={onChangeCard}
                 keyboardType="number-pad"
                 textContentType="creditCardNumber"
                 returnKeyType="next"
                 containerStyle={styles.fieldContainer}
                 style={styles.fieldText}
+                maxLength={19}
               />
 
               <View style={{ flexDirection: 'row', columnGap: 12 }}>
-                <Input
-                  placeholder="MM/YY"
-                  value={exp}
-                  onChangeText={setExp}
-                  keyboardType="number-pad"
-                  returnKeyType="next"
-                  style={[styles.fieldText, { textAlign: 'center' }]}
-                />
-                <Input
-                  placeholder="CVC"
-                  value={cvc}
-                  onChangeText={setCvc}
-                  keyboardType="number-pad"
-                  returnKeyType="next"
-                  style={[styles.fieldText, { textAlign: 'center' }]}
-                />
+                <View style={{ flex: 1 }}>
+                  <Input
+                    placeholder="ММ/ГГ"
+                    value={exp}
+                    onChangeText={onChangeExp}
+                    keyboardType="number-pad"
+                    returnKeyType="next"
+                    containerStyle={styles.fieldContainer}
+                    style={[styles.fieldText, { textAlign: 'center' }]}
+                    maxLength={5}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Input
+                    placeholder="CVC"
+                    value={cvc}
+                    onChangeText={onChangeCvc}
+                    keyboardType="number-pad"
+                    returnKeyType="next"
+                    containerStyle={styles.fieldContainer}
+                    style={[styles.fieldText, { textAlign: 'center' }]}
+                    maxLength={4}
+                  />
+                </View>
               </View>
 
               {/* Country select */}
-              <View style={{}}>
+              <View>
                 <Select
                   options={COUNTRIES}
                   value={country}
                   onChange={setCountry}
-                  placeholder="Country"
-                  // If your Select supports containerStyle, uncomment the next line:
-                  // containerStyle={styles.fieldContainer}
+                  placeholder="Държава"
                 />
               </View>
 
               <Input
-                placeholder="ZIP code"
+                placeholder="Пощенски код"
                 value={zip}
-                onChangeText={setZip}
+                onChangeText={onChangeZip}
                 returnKeyType="done"
                 containerStyle={styles.fieldContainer}
                 style={styles.fieldText}
+                keyboardType="number-pad"
+                maxLength={10}
               />
 
               <Checkbox
                 size="sm"
                 checked={saveInfo}
                 onChange={setSaveInfo}
-                label="Save information for future payments"
+                label="Запази информацията за бъдещи плащания"
               />
             </View>
 
@@ -189,7 +210,7 @@ export default function Payment() {
               <SecondaryButton
                 fullWidth
                 size="md"
-                label={`Subscribe & Pay ${price.toFixed(2)} BGM`}
+                label={`Абонирай се и плати ${price.toFixed(2)} BGM`}
                 disabled={!valid || price <= 0}
                 onPress={handlePay}
                 radius={14}
@@ -213,7 +234,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   headerTitle: {},
-  // visual match to dark rounded inputs in the mock
+  // Match dark rounded inputs from the design
   fieldContainer: {
     height: 56,
     borderRadius: 14,
@@ -222,7 +243,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   fieldText: {
-    // ensure good legibility over the dark bg
     color: Colors.text,
   },
 });
+
