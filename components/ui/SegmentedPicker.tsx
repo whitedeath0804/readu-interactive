@@ -61,10 +61,10 @@ export default function SegmentedPicker({
   animationMs = 200,
   innerPadding = 8,
   // token defaults
-  trackBg = Neutral.white10,
-  trackBorder = Neutral.white10,
+  trackBg = Neutral.white30,
+  trackBorder = Neutral.white30,
   thumbBg = Colors.primaryLight,         // <<< primary light as selected pill
-  unselectedColor = Neutral.white10,
+  unselectedColor = Colors.textSecondary,
 }: SegmentedPickerProps) {
   const count = segments.length;
   const controlled = typeof index === "number";
@@ -142,7 +142,7 @@ export default function SegmentedPicker({
             borderWidth: 1,
             padding: innerPadding,
           },
-          disabled && { opacity: 0.6 },
+          disabled && { opacity: 0.4 },
         ]}
       >
         {/* Thumb (selected pill) */}

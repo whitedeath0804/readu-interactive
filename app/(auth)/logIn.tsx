@@ -1,95 +1,155 @@
-import React, { useState } from 'react';
-import { ImageBackground, View, Text, Pressable } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import {
+  ImageBackground,
+  KeyboardAvoidingView,
+  Keyboard,
+  Platform,
+  Pressable,
+  TouchableWithoutFeedback,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import Input from '../../components/ui/Input';
-import PasswordInput from '../../components/ui/PasswordInput';
-import Checkbox from '../../components/ui/Checkbox';
-import PrimaryButton from '../../components/ui/PrimaryButton';
-import SecondaryButton from '../../components/ui/SecondaryButton';
-import GoogleLogo24 from '../../components/GoogleLogo24';
-import { useAuth } from '../../providers/AuthProvider';
-import useAuthStore from '../../store/useAuthStore';
-import { useToast } from '../../providers/ToastProvider';
-import { ENABLE_GOOGLE, ENABLE_PHONE } from '../../constants/features';
+
+import { Colors } from '@/constants/Colors';
+import { Typo } from '@/constants/Typography';
+import Input from '@/components/ui/Input';
+import PasswordInput from '@/components/ui/PasswordInput';
+import PrimaryButton from '@/components/ui/PrimaryButton';
+import SecondaryButton, { GoogleLogo24 } from '@/components/ui/SecondaryButton';
+import Checkbox from '@/components/ui/Checkbox';
+import CloseButton from '@/components/ui/CloseButton';
 
 export default function LogIn() {
   const router = useRouter();
-  const { signInEmail } = useAuth();
-  const { rememberMe, setRememberMe } = useAuthStore();
-  const toast = useToast();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
-  async function onLogin() {
-    try {
-      setLoading(true);
-      await signInEmail(email.trim(), password);
-      toast.success('Успешен вход');
-      router.replace('/');
-    } catch (e: any) {
-      toast.error('Неуспешен вход', e?.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
+
+  const canSubmit = useMemo(() => identifier.trim().length > 0 && password.length >= 8, [identifier, password]);
+
+  const onBack = () => router.back();
+  const onForgot = () => console.log('Forgot password');
+  const onRegister = () => router.push('/(auth)/SignIn');
+  const onGoogle = () => console.log('Login with Google');
 
   return (
-    <ImageBackground source={require('../../assets/images/onboarding-bg.jpg')} style={{ flex: 1 }}>
-      <View style={{ flex: 1, padding: 24 }}>
-        <Text style={{ color: '#fff', fontSize: 28, fontWeight: '700', marginTop: 24 }}>Вход</Text>
-        <Text style={{ color: 'rgba(255,255,255,0.85)', marginTop: 8 }}>Добре дошъл! Моля, въведи детайлите си.</Text>
+    <View style={styles.root}>
+      <StatusBar style="light" />
+      <ImageBackground
+        source={require('../../assets/images/onboarding-bg.jpg')}
+        style={StyleSheet.absoluteFill}
+        resizeMode="cover"
+      />
+      <LinearGradient
+        colors={["rgba(0,0,0,0.1)", "rgba(0,0,0,0.35)", "rgba(0,0,0,0.75)"]}
+        style={StyleSheet.absoluteFill}
+      />
 
-        <View style={{ height: 16 }} />
-        <Input value={email} onChangeText={setEmail} placeholder="Имейл или телефон" autoCapitalize="none" />
-        <View style={{ height: 12 }} />
-        <PasswordInput value={password} onChangeText={setPassword} placeholder="Парола" />
+      <SafeAreaView style={styles.safe}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={insets.top + 12}
+            style={{ flex: 1 }}
+          >
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 16) }]}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+            >
+              {/* Header */}
+              <View style={styles.headerRow}>
+                <CloseButton variant="back" size="sm" onPress={onBack} accessibilityLabel="Back" />
+                <Text style={[Typo.h2, styles.headerTitle, { color: Colors.text }]}>Log in</Text>
+              </View>
+              <Text style={[Typo.body3Regular, styles.lead, { color: Colors.textSecondary }]}>Welcome back! Please enter your details.</Text>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
-          <Pressable onPress={() => setRememberMe(!rememberMe)} style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Checkbox checked={rememberMe} onChange={setRememberMe} />
-            <Text style={{ color: '#fff', marginLeft: 8 }}>Запомни ме</Text>
-          </Pressable>
-          <Pressable onPress={() => router.push('/forgot')}>
-            <Text style={{ color: '#FF7A1A', fontWeight: '600' }}>Забравена парола?</Text>
-          </Pressable>
-        </View>
+              {/* Form */}
+              <View style={styles.form}>
+              <Input
+                placeholder="Email or phone number"
+                value={identifier}
+                onChangeText={setIdentifier}
+                textContentType="emailAddress"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                returnKeyType="next"
+              />
 
-        <View style={{ height: 16 }} />
-        <PrimaryButton disabled={loading} onPress={onLogin}>Вход</PrimaryButton>
+              <PasswordInput
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                returnKeyType="done"
+              />
 
-        {(ENABLE_GOOGLE || ENABLE_PHONE) && (
-          <View style={{ alignItems: 'center', marginVertical: 16 }}>
-            <Text style={{ color: 'rgba(255,255,255,0.7)' }}>или</Text>
-          </View>
-        )}
+              <View style={styles.rowBetween}>
+                <Checkbox label="Remember me" size="sm" checked={remember} onChange={setRemember} />
+                <Pressable onPress={onForgot} accessibilityRole="button">
+                  <Text style={[Typo.body2, { color: Colors.primary }]}>Forgot password?</Text>
+                </Pressable>
+              </View>
 
-        {ENABLE_GOOGLE && (
-          <SecondaryButton onPress={() => toast.error('Google входът е временно недостъпен')}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <GoogleLogo24 />
-              <Text style={{ marginLeft: 8 }}>Вход с Google</Text>
-            </View>
-          </SecondaryButton>
-        )}
+              <PrimaryButton
+                label="Log in"
+                size="lg"
+                fullWidth
+                disabled={!canSubmit}
+                onPress={() => console.log('Login submit')}
+                style={styles.cta}
+              />
 
-        {ENABLE_PHONE && (
-          <>
-            <View style={{ height: 12 }} />
-            <SecondaryButton onPress={() => router.push('/phone-start')}>
-              Вход с телефон
-            </SecondaryButton>
-          </>
-        )}
+              <View style={styles.centerRow}>
+                <Text style={[Typo.body3Regular, { color: Colors.textSecondary }]}>Don’t have an account? </Text>
+                <Pressable onPress={onRegister} accessibilityRole="button">
+                  <Text style={[Typo.body3, { color: Colors.primary }]}>Register now</Text>
+                </Pressable>
+              </View>
 
-        <View style={{ alignItems: 'center', marginTop: 16 }}>
-          <Text style={{ color: 'rgba(255,255,255,0.85)' }}>
-            Нямаш акаунт?{' '}
-            <Text style={{ color: '#FF7A1A' }} onPress={() => router.push('/signIN')}>Регистрирай се</Text>
-          </Text>
-        </View>
-      </View>
-    </ImageBackground>
+              <View style={styles.dividerRow}>
+                <View style={styles.rule} />
+                <Text style={[Typo.body3Regular, { color: Colors.textSecondary }]}>or</Text>
+                <View style={styles.rule} />
+              </View>
+
+              <SecondaryButton
+                label="Log in with Google"
+                size="md"
+                icon={<GoogleLogo24 />}
+                fullWidth
+                onPress={onGoogle}
+                radius={12}
+              />
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
+    </View>
   );
 }
 
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, paddingHorizontal: 20, paddingBottom: 12 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 4 },
+  headerTitle: {},
+  lead: { marginTop: 8 },
+  scrollContent: { paddingBottom: 24 },
+  form: { marginTop: 16, gap: 14 },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  centerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 6 },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 },
+  rule: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Colors.borderLight },
+  cta: { marginTop: 2 },
+});

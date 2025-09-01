@@ -4,12 +4,12 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
   View,
-  useWindowDimensions,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -25,13 +25,10 @@ import PasswordInput from '@/components/ui/PasswordInput';
 import Checkbox from '@/components/ui/Checkbox';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import PlanCard from '@/components/ui/PlanCard';
-import TertiaryButton from '@/components/ui/TertiaryButton';
 
 export default function SignIn() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const gutter = Math.round(Math.min(28, Math.max(16, width * 0.05)));
 
   // tabs: 0 details, 1 plan
   const [tab, setTab] = useState(0);
@@ -46,52 +43,50 @@ export default function SignIn() {
 
   const emailOk = /.+@.+\..+/.test(email);
   const phoneOk = phone.trim().length >= 7; // basic len check
-  const canNext = useMemo(
-    () => name.trim().length > 1 && emailOk && phoneOk && password.length >= 8 && agree,
-    [name, emailOk, phoneOk, password, agree]
-  );
+  const canNext = useMemo(() => name.trim().length > 1 && emailOk && phoneOk && password.length >= 8 && agree, [name, emailOk, phoneOk, password, agree]);
 
   const onRegister = () => setTab(1);
   const onBack = () => router.back();
-  const gotoApp = () => router.replace('/payment');
+  const gotoApp = () => router.replace('/(tabs)');
 
   return (
     <View style={styles.root}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={insets.top + Math.max(24, gutter)}
+        // a bit more offset so the first input never hides under the notch/header
+        keyboardVerticalOffset={insets.top + 24}
         style={{ flex: 1 }}
       >
-        <StatusBar style="light" />
-        <ImageBackground
-          source={require('../../assets/images/onboarding-bg.jpg')}
-          style={StyleSheet.absoluteFill}
-          resizeMode="cover"
-        />
-        <LinearGradient
-          colors={["rgba(0,0,0,0.1)", "rgba(0,0,0,0.35)", "rgba(0,0,0,0.75)"]}
-          style={StyleSheet.absoluteFill}
-        />
+      <StatusBar style="light" />
+      <ImageBackground
+        source={require('../../assets/images/onboarding-bg.jpg')}
+        style={StyleSheet.absoluteFill}
+        resizeMode="cover"
+      />
+      <LinearGradient
+        colors={["rgba(0,0,0,0.1)", "rgba(0,0,0,0.35)", "rgba(0,0,0,0.75)"]}
+        style={StyleSheet.absoluteFill}
+      />
 
-        <SafeAreaView style={[styles.safe, { paddingHorizontal: gutter }] }>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={styles.safe}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
             <ScrollView
               style={{ flex: 1 }}
-              contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 24, 24) }]}
+              contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 16) }]}
               keyboardDismissMode="on-drag"
               keyboardShouldPersistTaps="handled"
             >
               {/* Header */}
               <View style={styles.headerRow}>
                 <CloseButton variant="back" size="sm" onPress={onBack} accessibilityLabel="Back" />
-                <Text style={[Typo.h2, styles.headerTitle, { color: Colors.text }]}>Регистрация</Text>
+                <Text style={[Typo.h2, styles.headerTitle, { color: Colors.text }]}>Register</Text>
               </View>
-              <Text style={[Typo.body3Regular, { color: Colors.textSecondary }]}>Присъедини се! Създай своя акаунт по‑долу.</Text>
+              <Text style={[Typo.body3Regular, { color: Colors.textSecondary }]}>Join us! Create your account below.</Text>
 
               {/* Segmented */}
               <View style={{ marginTop: 16 }}>
                 <SegmentedPicker
-                  segments={["Данни за вход", "Избери план"]}
+                  segments={["Log in details", "Pick a plan"]}
                   index={tab}
                   onChange={setTab}
                 />
@@ -100,13 +95,13 @@ export default function SignIn() {
               {tab === 0 ? (
                 <View style={{ gap: 14, marginTop: 16 }}>
                   <Input
-                    placeholder="Име"
+                    placeholder="име"
                     value={name}
                     onChangeText={setName}
                     returnKeyType="next"
                   />
                   <Input
-                    placeholder="Имейл"
+                    placeholder="Email"
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
@@ -129,17 +124,18 @@ export default function SignIn() {
                   />
 
                   <View style={styles.rowBetween}>
-                    <Checkbox size="sm" label="Запомни ме" checked={remember} onChange={setRemember} />
+                    <Checkbox size="sm" label="Запомни" checked={remember} onChange={setRemember} />
                   </View>
 
                   <View style={styles.rowInline}>
-                    <Checkbox size="sm" checked={agree} onChange={setAgree} />
-                    <Text style={[Typo.body2, { color: Colors.textSecondary }]}> Съгласявам се с </Text>
-                    <TertiaryButton size="sm" label="Условията и Правилата" onPress={() => console.log('Terms')} />
+                    <Checkbox size="sm" checked={agree} onChange={setAgree} label="Съгласявам се" />
+                    <Pressable onPress={() => console.log('Terms')}>
+                      <Text style={[Typo.body2, { color: Colors.primary }]}>политиките</Text>
+                    </Pressable>
                   </View>
 
                   <PrimaryButton
-                    label="Напред"
+                    label="Next"
                     size="lg"
                     disabled={!canNext}
                     fullWidth
@@ -148,44 +144,42 @@ export default function SignIn() {
                   />
 
                   <View style={styles.centerRow}>
-                    <Text style={[Typo.body3Regular, { color: Colors.textSecondary }]}>Вече имаш акаунт? </Text>
-                    <TertiaryButton size="sm" label="Вход" onPress={() => router.back()} />
+                    <Text style={[Typo.body3Regular, { color: Colors.textSecondary }]}>Already have an account? </Text>
+                    <Pressable onPress={() => router.push('/(auth)/LogIn')}>
+                      <Text style={[Typo.body3, { color: Colors.primary }]}>Log in</Text>
+                    </Pressable>
                   </View>
                 </View>
               ) : (
                 <View style={{ gap: 16, marginTop: 16 }}>
                   <PlanCard
-                    title="Безплатен"
+                    title="Free"
                     price="00.00 BGM"
-                    period="/ месец"
                     features={[
-                      { text: 'Пълен достъп до видео и упражнения', included: true },
-                      { text: 'Ограничен достъп до AI чатботове', included: false },
-                      { text: 'Ограничени езици (само C1)', included: false },
+                      { text: 'Full access to video and exercise library', included: true },
+                      { text: 'Limited access to AI chatbots', included: false },
+                      { text: 'Limited access to Languages (C1 only)', included: false },
                     ]}
-                    ctaLabel="Продължи"
                     onPress={gotoApp}
                   />
 
                   <PlanCard
-                    title="Премиум"
+                    title="Premium"
                     price="22.89 BGM"
-                    period="/ месец"
                     features={[
-                      { text: 'Пълен достъп до видео и упражнения', included: true },
-                      { text: 'Разширен достъп до AI чатботове', included: true },
-                      { text: 'Достъп до всички езици', included: true },
+                      { text: 'Full access to video and exercise library', included: true },
+                      { text: 'Greater access to AI chatbots', included: true },
+                      { text: 'Access to all languages', included: true },
                     ]}
                     highlight
-                    ctaLabel="Продължи"
                     onPress={gotoApp}
                     style={{ marginBottom: 8 }}
                   />
                 </View>
               )}
             </ScrollView>
-          </TouchableWithoutFeedback>
-        </SafeAreaView>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
       </KeyboardAvoidingView>
     </View>
   );
@@ -193,7 +187,7 @@ export default function SignIn() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
-  safe: { flex: 1, paddingBottom: 12 },
+  safe: { flex: 1, paddingHorizontal: 20, paddingBottom: 12 },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 4 },
   headerTitle: {},
   scrollContent: { paddingBottom: 24 },

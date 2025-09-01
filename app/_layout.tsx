@@ -2,14 +2,10 @@
 import 'react-native-reanimated';
 import { useFonts } from 'expo-font';
 import { Stack, useRootNavigationState } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { StripeProvider } from '@stripe/stripe-react-native';
-import AppProviders from './providers';
-import { STRIPE_PUBLISHABLE_KEY } from '../lib/stripe-client';
-import useAuthGate from '@/hooks/useAuthGate';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,7 +21,6 @@ export default function RootLayout() {
   const navState = useRootNavigationState();
 
   // run the auth gate (see hook below: it waits for nav to be ready)
-  useAuthGate();
 
   useEffect(() => {
     if (fontsLoaded && navState?.key) {
@@ -34,13 +29,15 @@ export default function RootLayout() {
   }, [fontsLoaded, navState?.key]);
 
   return (
-    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
-      <AppProviders>
-        <StatusBar style="auto" />
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerShown: false }} />
-        </GestureHandlerRootView>
-      </AppProviders>
-    </StripeProvider>
+    // <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
+      // <AppProviders>
+        <>
+          <StatusBar style="auto" />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Stack screenOptions={{ headerShown: false }} />
+          </GestureHandlerRootView>
+        </>
+      // </AppProviders>
+    // </StripeProvider>
   );
 }
