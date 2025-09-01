@@ -202,6 +202,7 @@ export default function Payment() {
                 checked={saveInfo}
                 onChange={setSaveInfo}
                 label="Запази информацията за бъдещи плащания"
+                multiline
               />
             </View>
 

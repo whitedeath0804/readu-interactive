@@ -1,195 +1,85 @@
 # READU Interactive – UI & Components Guide
 
-This document describes how the UI in this app is structured, how the shared design tokens work, and how to use the reusable components across screens. It reflects the implementation in this repo as of now.
+Short guide to structure, tokens, components, and screens. Updated for the latest Home screen, coins, animations, and payment input formatting/localization.
 
 ## Stack
 
 - Expo + React Native with Expo Router
 - TypeScript/TSX components
-- Reanimated for subtle on‑enter animations
-- expo‑haptics for tactile feedback
+- Animated (RN) for lightweight scroll animations
+- expo-haptics for tactile feedback
 - Safe Area Context for insets
 
 ## Project Layout
 
 - Screens (Expo Router): `app/`
-  - `app/index.tsx` – splash handoff (routes to `/welcome`)
+  - `app/index.tsx` → redirects to `/(tabs)` (main app)
+  - `app/(tabs)/index.tsx` – Home screen (main page)
   - `app/(auth)/welcome.tsx` – marketing welcome
   - `app/(auth)/LogIn.tsx` – login form
   - `app/(auth)/SignIn.tsx` – registration (details + plan selection)
   - `app/(auth)/payment.tsx` – payment method and checkout
   - Layouts: `app/_layout.tsx`, `app/(auth)/_layout.tsx`, `app/(tabs)/_layout.tsx`
 - Reusable UI: `components/ui/`
-- Other components: `components/`
-- Design tokens: `constants/`
-  - `constants/Colors.ts`
-  - `constants/Typography.ts`
-  - `constants/elevation.ts`
-  - `constants/features.ts`
-  - `constants/authConfig.ts` (placeholders only)
+- Design tokens: `constants/` (Colors, Typography, elevation)
 
 ## Design Tokens
 
-Use tokens over raw values. They map to the current theme and ensure consistency.
+Use tokens instead of raw values:
 
-- Colors (`constants/Colors.ts`)
-  - Core: `primary`, `primaryLight`, `primaryDark`
-  - Text: `text` (white), `textSecondary`, `textSecondaryDark`
-  - Surfaces: `background`, `backgroundAlt`, `backgroundElevated`
-  - Feedback: `success`, `error`
-  - Borders: `border`, `borderLight`
-  - Overlays: `overlay`
-  - Brand gradient: `gradient: [start, end]`
-- Typography (`constants/Typography.ts`)
-  - Headings: `Typo.h1/h2/h3/h4/h4Regular`
-  - Body: `Typo.body1/body2/body2Regular/body3/body3Regular`
-  - Caption: `Typo.caption`
-  - Each includes `fontFamily`, `fontSize`, `lineHeight`, `fontWeight`
-- Elevation (`constants/elevation.ts`)
-  - Presets: `Elevation.navbar`, `Elevation.courseCard`
-  - Cross‑platform: sets `shadow*` and Android `elevation`
-- Feature flags (`constants/features.ts`)
-  - `ENABLE_GOOGLE`, `ENABLE_PHONE`, …
-- Auth config (`constants/authConfig.ts`)
-  - Placeholder env holders (client IDs etc.). Fill via secrets, don’t commit real keys.
+- Colors: `Colors.primary`, `Colors.text`, `Colors.background`, `Colors.gradient`, etc.
+- Typography: `Typo.h1/h2/h3`, `Typo.body2`, `Typo.body3Regular`, etc.
+- Elevation: shadow presets for cards and surfaces.
 
-Fonts are loaded in `app/_layout.tsx` (`Montserrat` + `Lato`).
+Fonts load in `app/_layout.tsx` (`Montserrat`, `Lato`).
 
 ## UI Components (components/ui)
 
-Buttons
-- `PrimaryButton` – filled, brand background.
-- `SecondaryButton` – white surface, brand border, optional icon.
-- `TertiaryButton` – text‑only (links like “Register now”).
-
-Inputs
-- `Input` – text field with optional left/right slots.
-- `PasswordInput` – masked input with eye toggle.
-- `CodeInput` – multi‑cell one‑time code entry.
-- `Select` – popover select; anchored to field; accepts `{ key, label }[]`.
-
-Selection & Navigation
-- `Checkbox` – animated ring, semibold when checked.
-- `SegmentedPicker` – 2‑tab selector with animated thumb; improved shadow backdrop.
-- `CloseButton` – circular back/close (variants `back`/`close`).
-
-Content & Misc
-- `ThreeDotsMenu` – popup menu for actions.
-- `SettingsMobileButton` – list row with chevron.
-- `CourseCard`, `UpgradePromoCard` – sample content cards.
-- New: `PlanCard` – plan presentation + CTA; supports `selected` border.
-- New: `PlanBadge` – pill badge with brand gradient; used on payment.
-
-All components use `Colors` and `Typo` tokens; most apply haptics on press and set accessible roles/labels.
+- Buttons: `PrimaryButton`, `SecondaryButton`, `TertiaryButton`
+- Inputs: `Input`, `PasswordInput`, `CodeInput`, `Select`
+- Selection & Nav: `Checkbox`, `SegmentedPicker`, `CloseButton`, `SettingsMobileButton`
+- Content: `CourseCard`, `UpgradePromoCard`, `PlanCard`, `PlanBadge`
+- New components:
+  - `ReaduCoin.tsx`: `ReaduCoinIcon` and `CoinsPill({ value })` for dynamic coin display.
+  - `Section.tsx`: wrapper that gently reveals on scroll (fade/slide). Edit ranges there to tune strength.
+  - `GearIcon.tsx`: reusable settings icon (SVG).
 
 ## Screens & Flow
 
-Welcome (`app/(auth)/welcome.tsx`)
-- Background image + dark gradient overlay.
-- Reanimated entrance for logo/title/subtitle/actions.
-- Buttons: `PrimaryButton` → Log in, `SecondaryButton` → guest.
-- Keyboard safe: `KeyboardAvoidingView` + `ScrollView` with `flexGrow: 1`.
+Home (tabs) – `app/(tabs)/index.tsx`
+- Full‑page Animated.ScrollView (header, greeting, search, sections all scroll).
+- Header: logo + `PlanBadge`(“Премиум”), coins pill, settings button.
+- Sections: horizontal carousels with a subtle reveal on scroll.
+- Tab bar: hidden only on this page via per‑screen option in `app/(tabs)/_layout.tsx`.
+- Bottom reach: content container uses `paddingBottom: insets.bottom` so it reaches the bottom edge.
 
-Log In (`app/(auth)/LogIn.tsx`)
-- Full‑page scrollable form.
-- `Input` (identifier), `PasswordInput` (eye toggle), `Checkbox` Remember me.
-- Inline link buttons with brand color (or use `TertiaryButton` where suitable).
-- Submit enabled when identifier present and password ≥ 8.
+Payment – `app/(auth)/payment.tsx`
+- Bulgarian copy throughout.
+- Inputs are numbers‑only where applicable:
+  - Card number: digits only (max 19).
+  - Expiry: auto‑formats “ММ/ГГ”.
+  - CVC: digits only (max 4).
+  - ZIP: digits only.
+- Plan badge shows “Премиум/Безплатен”.
+- CTA: “Абонирай се и плати {цена} BGM”.
 
-Sign In (`app/(auth)/SignIn.tsx`)
-- Two steps via `SegmentedPicker`:
-  1) Details: `Input`(name/email/phone) + `PasswordInput`, `Checkbox`(remember), `Checkbox`(terms) + `TertiaryButton` link; `PrimaryButton` “Напред”.
-  2) Plan selection: Two `PlanCard`s (Безплатен, Премиум). Selecting a card turns its border orange. CTA “Продължи”.
-- Routes to payment with the plan as a router param: `/payment?plan=free|premium`.
-- Responsive horizontal padding via `useWindowDimensions()` gutter.
-- Keyboard safety: `KeyboardAvoidingView` (`keyboardVerticalOffset` ≈ header height), `ScrollView` with `flexGrow: 1`, and background press to dismiss.
-
-Payment (`app/(auth)/payment.tsx`)
-- Header with `CloseButton` and title “Payment method”.
-- Selected plan: “Selected Plan:” + `PlanBadge` (brand gradient).
-- Fields:
-  - `Input` Card number
-  - Row: `Input` MM/YY and `Input` CVC
-  - `Select` Country (default Bulgaria)
-  - `Input` ZIP code
-  - `Checkbox` Save information for future payments
-- CTA: `SecondaryButton` “Subscribe & Pay {price} BGM”, disabled until simple validation passes.
-- Reads plan via `useLocalSearchParams()`; premium = 22.89 BGM; free = 0.00 (keeps CTA disabled).
+Auth – `app/(auth)/LogIn.tsx`, `app/(auth)/SignIn.tsx`
+- Standard forms with tokens and components. Sign‑In leads to Payment with `plan` param.
 
 Routing
-- Expo Router; most navigation uses `router.push()` / `router.replace()`.
-- Plan handoff: SignIn → Payment via query params; Payment displays a gradient `PlanBadge` accordingly.
+- Root (`app/index.tsx`) redirects to `/(tabs)`.
+- Use `router.push/replace` for navigation.
 
-## Patterns & Conventions
+## Tuning animations
+- Section reveal is defined in `components/ui/Section.tsx`.
+  - Current values are intentionally mild; adjust `translateY` and `inputRange` for more/less motion.
 
-- Styling
-  - Compose tokens first, then overrides: `[Typo.body2, { color: Colors.text }]`.
-  - Use semantic colors (`Colors`) instead of raw hex; prefer `Typo.*` over ad‑hoc font styles.
-- Keyboard
-  - Wrap forms in `KeyboardAvoidingView` with a stable header offset.
-  - `ScrollView` with `flexGrow: 1`; `keyboardDismissMode="on-drag"`.
-- Haptics
-  - Buttons and pickers trigger selection/impact via expo‑haptics (disabled on web).
-- Accessibility
-  - Components set `accessibilityRole`/`State` (e.g., `button`, `tab`, `checkbox`).
-- Shadows
-  - For translucent elements, render shadows on an opaque sibling backdrop (see `SegmentedPicker`’s `shadowWrap`).
+## Quick tips
+- Coins value: control with `<CoinsPill value={number} />` or wire to a store.
+- Keep new UI under `components/ui` and consume tokens from `constants`.
 
-## Quick Component Recipes
-
-PlanCard (controlled selection)
-```tsx
-<PlanCard
-  title="Premium"
-  price="22.89 BGM"
-  period="/ month"
-  features={[
-    { text: 'Full access to library', included: true },
-    { text: 'AI chatbots (extended)', included: true },
-  ]}
-  selected={plan === 'premium'}
-  onSelect={() => setPlan('premium')}
-  ctaLabel="Continue"
-  onPress={() => router.push({ pathname: '/payment', params: { plan: 'premium' } })}
-/>
-```
-
-Select (country)
-```tsx
-const options = [
-  { key: 'bg', label: 'Bulgaria' },
-  { key: 'ro', label: 'Romania' },
-];
-
-<Select options={options} value={country} onChange={setCountry} placeholder="Country" />
-```
-
-Typography
-```tsx
-<Text style={[Typo.h2, { color: Colors.text }]}>Title</Text>
-<Text style={[Typo.body3Regular, { color: Colors.textSecondary }]}>Helper</Text>
-```
-
-## Assets & Fonts
-
-- Background: `assets/images/onboarding-bg.jpg`
-- Logos: `assets/images/readu-logo-md.png`
-- Fonts loaded in `app/_layout.tsx`:
-  - `Montserrat-(Regular|SemiBold|Bold)`
-  - `Lato-(Regular|Bold)`
-
-## Extending
-
-- Add tokens in `constants/*` and reference via `Colors` / `Typo` / `Elevation`.
-- Add new components under `components/ui` following the token usage pattern.
-- When introducing shadows on translucent elements, use an opaque `shadowWrap` sibling.
-
-## Known Notes / TODOs
-
-- Payment validation is minimal; integrate with a PSP SDK for real payments.
-- `authConfig.ts` contains placeholders only; inject real secrets at runtime.
-- i18n: Sign‑in copy uses Bulgarian; extract strings to a dictionary if full localization is needed.
-
----
-For a focused reference on tokens, see `docs/Constants_Usage.md`.
+## Known notes / TODOs
+- Payment validation is minimal; integrate with your PSP.
+- Secrets are placeholders; inject at runtime (don’t commit).
+- i18n: primary flows use Bulgarian; extract strings to a dictionary as needed.
 
