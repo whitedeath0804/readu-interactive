@@ -130,6 +130,10 @@ export default function SegmentedPicker({
         style,
       ]}
     >
+      <View
+        pointerEvents="none"
+        style={[styles.shadowWrap, { height: trackH, borderRadius: trackH / 2 }]}
+      />
       {/* Track */}
       <View
         style={[
@@ -196,10 +200,14 @@ const centerText = (lh: number) => ({
 });
 
 const styles = StyleSheet.create({
-  wrap: { justifyContent: "center" },
+  wrap: { justifyContent: "center", position: "relative" },
   track: {
     borderWidth: 1,
     overflow: "hidden",
+  },
+  shadowWrap: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: Colors.backgroundElevated,
     // soft, even base shadow so the pill doesn't look offset
     shadowColor: "#000",
     shadowOpacity: 0.12,
