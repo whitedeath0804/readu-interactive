@@ -21,9 +21,11 @@ import Svg, { Path } from 'react-native-svg';
 import useAuthStore from '@/store/useAuthStore';
 import GearIcon from '@/components/ui/GearIcon';
 import Section from '@/components/ui/Section';
+import { useRouter } from 'expo-router';
 
 export default function HomeTab() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const displayName = useAuthStore((s) => s.displayName) ?? 'приятелю';
   const [coins] = useState(25);
 

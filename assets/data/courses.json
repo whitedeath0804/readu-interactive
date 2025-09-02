@@ -1,0 +1,37 @@
+{
+  "courses": [
+    {
+      "id": "math-101",
+      "slug": "math-101",
+      "title": "Научи изчисления онлайн. Дълго име на курс",
+      "coverImage": "../../assets/images/readu-test-card.jpg",
+      "backgroundImage": "../../assets/images/onboarding-bg.jpg",
+      "progress": 0.45,
+      "lessonsTotal": 32,
+      "trophy": true,
+      "modules": [
+        {
+          "id": "m1",
+          "title": "Модул 1: Граници",
+          "description": "",
+          "lessons": [
+            { "id": "l1", "title": "Какво са границите?", "stars": 3, "status": "current", "color": "#F6892B" },
+            { "id": "l2", "title": "Лява и дясна граница", "stars": 2, "status": "unlocked", "color": "#FF764A" },
+            { "id": "l3", "title": "Основи на непрекъснатост", "stars": 4, "status": "locked", "color": "#555" }
+          ]
+        },
+        {
+          "id": "m2",
+          "title": "Модул 2: Дълго име на модул. Примерен текст за описание.",
+          "description": "",
+          "lessons": [
+            { "id": "l4", "title": "Полиномиални граници", "stars": 5, "status": "locked", "color": "#666" },
+            { "id": "l5", "title": "Рационални функции", "stars": 4, "status": "locked", "color": "#666" },
+            { "id": "l6", "title": "Тригонометрични граници", "stars": 3, "status": "locked", "color": "#666" },
+            { "id": "l7", "title": "Епсилон-делта", "stars": 2, "status": "locked", "color": "#666" }
+          ]
+        }
+      ]
+    }
+  ]
+}

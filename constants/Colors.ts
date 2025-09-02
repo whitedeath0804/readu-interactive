@@ -66,6 +66,6 @@ export const Colors = {
   overlay: Neutral.overlay,
 
   // Gradient + accents
-  gradient: [Accent.gradientStart, Accent.gradientEnd],
+  gradient: [Accent.gradientStart, Accent.gradientEnd] as const,
   yellow: Accent.yellow,
 };

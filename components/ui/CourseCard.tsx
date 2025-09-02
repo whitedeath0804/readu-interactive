@@ -15,6 +15,7 @@ import * as Haptics from "expo-haptics";
 import { Colors, Neutral } from "@/constants/Colors";
 import { Typo } from "@/constants/Typography";
 import { Elevation } from "@/constants/elevation"; // uses your elevation tokens
+import { useRouter } from "expo-router";
 
 type Size = "sm" | "md";
 
@@ -119,6 +120,7 @@ export default function CourseCard({
   onPress,
   disabled,
 }: CourseCardProps) {
+  const router = useRouter();
   const p = PRESETS[size];
   const W = width ?? p.width;
   const H = height ?? p.height;
@@ -130,7 +132,11 @@ export default function CourseCard({
 
   const handlePress = (e: GestureResponderEvent) => {
     if (!disabled) Haptics.selectionAsync();
-    onPress?.(e);
+    if (onPress) return onPress(e);
+    // Fallback: open example course page
+    try {
+      router.push({ pathname: "/course/[courseId]", params: { courseId: "math-101" } });
+    } catch {}
   };
 
   return (
